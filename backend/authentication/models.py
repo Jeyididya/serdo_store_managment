@@ -28,4 +28,4 @@ class user(AbstractUser):
     department=models.CharField(max_length=30, choices=department_options)
 
     def __str__(self):
-        return self.first_name + " " + self.last_name
+        return self.username
