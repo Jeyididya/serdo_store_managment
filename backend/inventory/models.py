@@ -73,7 +73,7 @@ class merchandise_transfer_in(models.Model):
     quantity=models.IntegerField()
     store=models.ForeignKey(store, on_delete=models.CASCADE)
     date=models.DateTimeField(auto_now_add=True)
-    requested_by=models.ForeignKey(user, on_delete=models.CASCADE, related_name='merchandise_in_requested_by')
+    received_by=models.ForeignKey(user, on_delete=models.CASCADE, related_name='received_by', null=True)
     approved_by=models.ForeignKey(user, on_delete=models.CASCADE, related_name='merchandise_in_approved_by')
     status=models.CharField(max_length=10, choices=(('pending', 'Pending'), ('approved', 'Approved'), ('rejected', 'Rejected')))
 
