@@ -44,9 +44,9 @@ class createUser(graphene.Mutation):
 
 class authMutation(graphene.ObjectType):
     create_user = createUser.Field()
-    token_auth = graphql_jwt.ObtainJSONWebToken.Field()
-    verify_token = graphql_jwt.Verify.Field()
-    refresh_token = graphql_jwt.Refresh.Field()
+    token_auth = graphql_jwt.relay.ObtainJSONWebToken.Field()
+    verify_token = graphql_jwt.relay.Verify.Field()
+    refresh_token = graphql_jwt.relay.Refresh.Field()
 
 
 
