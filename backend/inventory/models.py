@@ -57,7 +57,7 @@ class item(models.Model):
     image=models.ImageField(upload_to='item_images',blank=True)
     supplier=models.ForeignKey(supplier,on_delete=models.CASCADE) 
     store=models.ForeignKey(store,on_delete=models.CASCADE)
-
+    date_registered=models.DateTimeField(auto_now_add=True)
     class Meta:
         verbose_name = _("item")
         verbose_name_plural = _("items")
@@ -67,10 +67,19 @@ class item(models.Model):
     def get_absolute_url(self):
         return reverse("item_detail", kwargs={"pk": self.pk})
 
-
-class merchandise_transfer_in(models.Model):
-    item=models.ForeignKey(item, on_delete=models.CASCADE)
+class merchandiseTransferInItem(models.Model):
+    item=models.ForeignKey(item,on_delete=models.CASCADE, related_name="mtiv_item")
     quantity=models.IntegerField()
+    class Meta:
+        verbose_name = _("merchandiseTransferItem")
+        verbose_name_plural = _("merchandiseTransferItems")
+
+    def __str__(self):
+        return self.item.name
+    def get_absolute_url(self):
+        return reverse("merchandiseTransferItem_detail", kwargs={"pk": self.pk})
+class merchandise_transfer_in(models.Model):
+    item = models.ForeignKey(merchandiseTransferInItem, on_delete=models.CASCADE)
     store=models.ForeignKey(store, on_delete=models.CASCADE)
     date=models.DateTimeField(auto_now_add=True)
     received_by=models.ForeignKey(user, on_delete=models.CASCADE, related_name='received_by', null=True)
@@ -81,12 +90,23 @@ class merchandise_transfer_in(models.Model):
         verbose_name = _("merchandise_transfer_in")
     
     def __str__(self):
-        return self.item.name + " " + self.store.name
+        return str(self.date) + " " + self.store.name
+
+class merchandiseTransferOutItem(models.Model):
+    item=models.ForeignKey(item,on_delete=models.CASCADE, related_name="mtov_item")
+    quantity=models.IntegerField()
+    class Meta:
+        verbose_name = _("merchandiseTransferOutItem")
+        verbose_name_plural = _("merchandiseTransferOutItems")
+
+    def __str__(self):
+        return self.item.name
+    def get_absolute_url(self):
+        return reverse("merchandiseTransferItem_detail", kwargs={"pk": self.pk})
 
 
 class merchandise_transfer_out(models.Model):
-    item=models.ForeignKey(item, on_delete=models.CASCADE)
-    quantity=models.IntegerField()
+    item = models.ForeignKey(merchandiseTransferOutItem, on_delete=models.CASCADE)
     store=models.ForeignKey(store, on_delete=models.CASCADE)
     date=models.DateTimeField(auto_now_add=True)
     requested_by=models.ForeignKey(user, on_delete=models.CASCADE, related_name='requested_by')
@@ -97,7 +117,7 @@ class merchandise_transfer_out(models.Model):
         verbose_name = _("merchandise_transfer_out")
     
     def __str__(self):
-        return self.item.name + " " + self.store.name
+        return self.item.__str__ + " " + self.store.name
 
 
 class repair_request(models.Model):

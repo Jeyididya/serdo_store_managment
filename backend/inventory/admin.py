@@ -8,6 +8,8 @@ admin.site.register(supplier)
 admin.site.register(store)
 admin.site.register(merchandise_transfer_in)
 admin.site.register(merchandise_transfer_out)
+admin.site.register(merchandiseTransferInItem)
+admin.site.register(merchandiseTransferOutItem)
 admin.site.register(repair_request)
 admin.site.register(wastage)
 
