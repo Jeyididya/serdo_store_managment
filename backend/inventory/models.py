@@ -149,3 +149,18 @@ class wastage(models.Model):
         return self.item.name + " " + self.item.store.name
     
 
+# class sales(models.Model):
+#     item=models.ForeignKey(item, on_delete=models.CASCADE)
+#     quantity=models.IntegerField()
+#     date=models.DateTimeField(auto_now_add=True)
+#     store=models.ForeignKey(store, on_delete=models.CASCADE)
+#     sales_person=models.ForeignKey(user, on_delete=models.CASCADE, related_name='sales_person', null=True)
+
+
+
+
+#     class Meta:
+#         verbose_name = _("Sales")
+    
+#     def __str__(self):
+#         return self.item.name
