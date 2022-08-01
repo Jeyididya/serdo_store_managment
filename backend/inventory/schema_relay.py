@@ -1,12 +1,11 @@
-import email
-from unicodedata import name
 import graphene
-from pkg_resources import require
 import django_filters
 from graphene_django import DjangoObjectType
 from graphene_django.filter import DjangoFilterConnectionField
 from .models import *
 
+
+"""Nodes and Filters for the Inventory Schema"""
 class storeFilter(django_filters.FilterSet):
     class Meta:
         model = store
@@ -83,6 +82,16 @@ class wastageFilter(django_filters.FilterSet):
 class wastageNode(DjangoObjectType):
     class Meta:
         model = wastage
+        interfaces = (graphene.relay.Node,)
+
+class merchandiseTransferInItemFilter(django_filters.FilterSet):
+    class Meta:
+        model = merchandiseTransferInItem
+        fields = ['item']
+
+class merchandiseTransferInItemNode(DjangoObjectType):
+    class Meta:
+        model = merchandiseTransferInItem
         interfaces = (graphene.relay.Node,)
 
 #Mutations
@@ -200,6 +209,7 @@ class deleteItemCategory(graphene.ClientIDMutation):
         ItemCategory = item_category.objects.get(id=input.get('id'))
         ItemCategory.delete()
         return deleteItemCategory(item_category=ItemCategory)
+
 """CRUD for item"""
 class createItem(graphene.ClientIDMutation):
     item = graphene.Field(itemNode)
@@ -253,28 +263,6 @@ class updateItem(graphene.ClientIDMutation):
         Item.save()
         return updateItem(item=Item)
 
-"""CRUD for merchandise transfer in"""
-
-class createMerchandiseTransferIn(graphene.ClientIDMutation):
-    merchandise_transfer_in = graphene.Field(merchandiseTransferInNode)
-    class Input:
-        store = graphene.ID(required=True)
-        date = graphene.DateTime(required=True)
-        total_price = graphene.Float(required=True)
-        total_quantity = graphene.Int(required=True)
-
-
-
-    def mutate_and_get_payload(root, info, **input):
-        store_obj = store.objects.get(id=input.get('store'))
-        
-        MerchandiseTransferIn = merchandise_transfer_in(store=store_obj,date=input.get('date'),total_price=input.get('total_price'),total_quantity=input.get('total_quantity'))
-        MerchandiseTransferIn.save()
-        for item in input.get('items'):
-            item_obj = item.objects.get(id=item)
-            MerchandiseTransferIn.items.add(item_obj)
-        return createMerchandiseTransferIn(merchandise_transfer_in=MerchandiseTransferIn)
-
 class deleteItem(graphene.ClientIDMutation):
     item = graphene.Field(itemNode)
 
@@ -285,6 +273,108 @@ class deleteItem(graphene.ClientIDMutation):
         Item = item.objects.get(id=input.get('id'))
         Item.delete()
         return deleteItem(item=Item)
+
+"""CRUD for merchandise transfer in"""
+class createMerchandiseTransferInItem(graphene.ClientIDMutation):
+    merchandise_transfer_in_item = graphene.Field(merchandiseTransferInItemNode)
+    class Input:
+        item = graphene.ID(required=True)
+        quantity = graphene.Int(required=True)
+        price = graphene.Float(required=True)
+        merchandise_transfer_in = graphene.ID(required=True)
+    
+    def mutate_and_get_payload(root, info, **input):
+        item_obj = item.objects.get(id=input.get('item'))
+        merchandise_transfer_in_obj = merchandise_transfer_in.objects.get(id=input.get('merchandise_transfer_in'))
+
+        MerchandiseTransferInItem = merchandiseTransferInItem(item=item_obj,quantity=input.get('quantity'),price=input.get('price'),merchandise_transfer_in=merchandise_transfer_in_obj)
+        MerchandiseTransferInItem.save()
+        return createMerchandiseTransferInItem(merchandiseTransferInItem=MerchandiseTransferInItem)
+
+class updateMerchandiseTransferInItem(graphene.ClientIDMutation):
+    merchandise_transfer_in_item = graphene.Field(merchandiseTransferInItemNode)
+    class Input:
+        id = graphene.ID()
+        item = graphene.ID(required=True)
+        quantity = graphene.Int(required=True)
+        price = graphene.Float(required=True)
+        merchandise_transfer_in = graphene.ID(required=True)
+    
+    def mutate_and_get_payload(root, info, **input):
+        item_obj = item.objects.get(id=input.get('item'))
+        merchandise_transfer_in_obj = merchandise_transfer_in.objects.get(id=input.get('merchandise_transfer_in'))
+
+        MerchandiseTransferInItem = merchandiseTransferInItem.objects.get(id=input.get('id'))
+        MerchandiseTransferInItem.item = item_obj
+        MerchandiseTransferInItem.quantity = input.get('quantity')
+        MerchandiseTransferInItem.price = input.get('price')
+        MerchandiseTransferInItem.merchandise_transfer_in = merchandise_transfer_in_obj
+        MerchandiseTransferInItem.save()
+        return updateMerchandiseTransferInItem(merchandiseTransferInItem=MerchandiseTransferInItem)
+
+class deleteMerchandiseTransferInItem(graphene.ClientIDMutation):
+    merchandise_transfer_in_item = graphene.Field(merchandiseTransferInItemNode)
+
+    class Input:
+        id = graphene.ID()
+
+    def mutate_and_get_payload(root, info, **input):
+        MerchandiseTransferInItem = merchandiseTransferInItem.objects.get(id=input.get('id'))
+        MerchandiseTransferInItem.delete()
+        return deleteMerchandiseTransferInItem(merchandiseTransferInItem=MerchandiseTransferInItem)
+
+class createMerchandiseTransferIn(graphene.ClientIDMutation):
+    merchandise_transfer_in = graphene.Field(merchandiseTransferInNode)
+    class Input:
+        store = graphene.ID(required=True)
+        # total_price = graphene.Float(required=True)
+        status = graphene.String()
+        approved_by = graphene.ID()      
+    
+    def mutate_and_get_payload(root, info, **input):
+        store_obj = store.objects.get(id=input.get('store'))
+        received_by = info.context.user
+        MerchandiseTransferIn = merchandise_transfer_in(store=store_obj, received_by=received_by,status=input.get('status'), approved_by=input.get('approved_by'))
+        MerchandiseTransferIn.save()
+        return createMerchandiseTransferIn(merchandise_transfer_in=MerchandiseTransferIn)
+
+class updateMerchandiseTransferIn(graphene.ClientIDMutation):
+    merchandise_transfer_in = graphene.Field(merchandiseTransferInNode)
+    class Input:
+        id = graphene.ID()
+        store = graphene.ID(required=True)
+        # total_price = graphene.Float(required=True)
+        status = graphene.String()
+        approved_by = graphene.ID()
+    
+    def mutate_and_get_payload(root, info, **input):
+        store_obj = store.objects.get(id=input.get('store'))
+        supplier_obj = supplier.objects.get(id=input.get('supplier'))
+        approved_by = user.objects.get(id=input.get('approved_by'))
+        received_by = info.context.user
+
+        MerchandiseTransferIn = merchandise_transfer_in.objects.get(id=input.get('id'))
+        MerchandiseTransferIn.store = store_obj
+        MerchandiseTransferIn.supplier = supplier_obj
+        MerchandiseTransferIn.received_by = received_by
+        MerchandiseTransferIn.status = input.get('status')
+        MerchandiseTransferIn.approved_by = approved_by
+
+        MerchandiseTransferIn.save()
+
+        return updateMerchandiseTransferIn(merchandise_transfer_in=MerchandiseTransferIn)
+
+class deleteMerchandiseTransferIn(graphene.ClientIDMutation):
+    merchandise_transfer_in = graphene.Field(merchandiseTransferInNode)
+    class Input:
+        id = graphene.ID()
+
+    def mutate_and_get_payload(root, info, **input):
+        MerchandiseTransferIn = merchandise_transfer_in.objects.get(id=input.get('id'))
+        MerchandiseTransferIn.delete()
+        return deleteMerchandiseTransferIn(merchandise_transfer_in=MerchandiseTransferIn)
+
+
 
 """CRUD for wastage"""
 
@@ -333,22 +423,22 @@ class deleteWastage(graphene.ClientIDMutation):
         Wastage.delete()
         return deleteWastage(wastage=Wastage)
 class inventoryQuery(graphene.ObjectType):
-    relay_item = graphene.relay.Node.Field(itemNode)
-    relay_items = DjangoFilterConnectionField(itemNode, filterset_class=itemFilter)
-    relay_store = graphene.relay.Node.Field(storeNode)
-    relay_stores = DjangoFilterConnectionField(storeNode, filterset_class=storeFilter)
-    relay_supplier = graphene.relay.Node.Field(supplierNode)
-    relay_suppliers = DjangoFilterConnectionField(supplierNode, filterset_class=supplierFilter)
-    # relay_item_category = graphene.relay.Node.Field(itemCategoriesNode)
-    relay_item_categories = DjangoFilterConnectionField(itemCategoriesNode, filterset_class=item_categoryFilter)
-    relay_merchandise_transfer_in = graphene.relay.Node.Field(merchandiseTransferInNode)
-    relay_merchandise_transfer_ins = DjangoFilterConnectionField(merchandiseTransferInNode, filterset_class=merchandiseTransferInFilter)
-    relay_merchandise_transfer_out = graphene.relay.Node.Field(merchandiseTransferOutNode)
-    relay_merchandise_transfer_outs = DjangoFilterConnectionField(merchandiseTransferOutNode, filterset_class=merchandiseTransferOutFilter)
-    relay_repair_request = graphene.relay.Node.Field(repairRequestNode)
-    relay_repair_requests = DjangoFilterConnectionField(repairRequestNode, filterset_class=repairRequestFilter)
-    relay_wastage = graphene.relay.Node.Field(wastageNode)  
-    relay_wastages = DjangoFilterConnectionField(wastageNode, filterset_class=wastageFilter)
+    item = graphene.relay.Node.Field(itemNode)
+    all_items = DjangoFilterConnectionField(itemNode, filterset_class=itemFilter)
+    store = graphene.relay.Node.Field(storeNode)
+    all_stores = DjangoFilterConnectionField(storeNode, filterset_class=storeFilter)
+    supplier = graphene.relay.Node.Field(supplierNode)
+    all_suppliers = DjangoFilterConnectionField(supplierNode, filterset_class=supplierFilter)
+    item_category = graphene.relay.Node.Field(itemCategoriesNode)
+    all_item_categories = DjangoFilterConnectionField(itemCategoriesNode, filterset_class=item_categoryFilter)
+    merchandise_transfer_in = graphene.relay.Node.Field(merchandiseTransferInNode)
+    all_merchandise_transfer_in = DjangoFilterConnectionField(merchandiseTransferInNode, filterset_class=merchandiseTransferInFilter)
+    merchandise_transfer_out = graphene.relay.Node.Field(merchandiseTransferOutNode)
+    all_merchandise_transfer_out = DjangoFilterConnectionField(merchandiseTransferOutNode, filterset_class=merchandiseTransferOutFilter)
+    repair_request = graphene.relay.Node.Field(repairRequestNode)
+    all_repair_requests = DjangoFilterConnectionField(repairRequestNode, filterset_class=repairRequestFilter)
+    wastage = graphene.relay.Node.Field(wastageNode)  
+    all_wastages = DjangoFilterConnectionField(wastageNode, filterset_class=wastageFilter)
 
 
 class inventoryMutations(graphene.ObjectType):
@@ -367,3 +457,5 @@ class inventoryMutations(graphene.ObjectType):
 
 
     create_wastage = createWastage.Field()
+
+    createMerchandiseTransferIn = createMerchandiseTransferIn.Field()
