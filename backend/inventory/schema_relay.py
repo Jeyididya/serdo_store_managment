@@ -64,6 +64,16 @@ class merchandiseTransferOutNode(DjangoObjectType):
         model = merchandise_transfer_out
         interfaces = (graphene.relay.Node,)
 
+class merchandiseTransferOutItemsFilter(django_filters.FilterSet):
+    class Meta:
+        model = merchandiseTransferOutItem
+        fields = ['item']
+
+class merchandiseTransferOutItemNode(DjangoObjectType):
+    class Meta:
+        model = merchandiseTransferOutItem
+        interfaces = (graphene.relay.Node,)
+
 class repairRequestFilter(django_filters.FilterSet):
     class Meta:
         model = repair_request
@@ -374,6 +384,106 @@ class deleteMerchandiseTransferIn(graphene.ClientIDMutation):
         MerchandiseTransferIn.delete()
         return deleteMerchandiseTransferIn(merchandise_transfer_in=MerchandiseTransferIn)
 
+"""CRUD for merchandise transfer out"""
+
+class createMerchandiseTransferOutItem(graphene.ClientIDMutation):
+    merchandise_transfer_out_item = graphene.Field(merchandiseTransferOutItemNode)
+    class Input:
+        item = graphene.ID(required=True)
+        quantity = graphene.Int(required=True)
+        # price = graphene.Float(required=True)
+        merchandise_transfer_out = graphene.ID(required=True)
+    
+    def mutate_and_get_payload(root, info, **input):
+        item_obj = item.objects.get(id=input.get('item'))
+        merchandise_transfer_out_obj = merchandise_transfer_in.objects.get(id=input.get('merchandise_transfer_out'))
+
+        MerchandiseTransferOutItem = merchandiseTransferInItem(item=item_obj,quantity=input.get('quantity'),merchandise_transfer_out=merchandise_transfer_out_obj)
+        MerchandiseTransferOutItem.save()
+        return createMerchandiseTransferOutItem(merchandiseTransferInItem=MerchandiseTransferOutItem)
+
+class updateMerchandiseTransferOutItem(graphene.ClientIDMutation):
+    merchandise_transfer_out_item = graphene.Field(merchandiseTransferOutItemNode)
+    class Input:
+        id = graphene.ID()
+        item = graphene.ID(required=True)
+        quantity = graphene.Int(required=True)
+        # price = graphene.Float(required=True)
+        merchandise_transfer_out = graphene.ID(required=True)
+    
+    def mutate_and_get_payload(root, info, **input):
+        item_obj = item.objects.get(id=input.get('item'))
+        merchandise_transfer_out_obj = merchandise_transfer_in.objects.get(id=input.get('merchandise_transfer_out'))
+
+        MerchandiseTransferOutItem = merchandiseTransferOutItem.objects.get(id=input.get('id'))
+        MerchandiseTransferOutItem.item = item_obj
+        MerchandiseTransferOutItem.quantity = input.get('quantity')
+        # MerchandiseTransferOutItem.price = input.get('price')
+        MerchandiseTransferOutItem.merchandise_transfer_in = merchandise_transfer_out_obj
+        MerchandiseTransferOutItem.save()
+        return updateMerchandiseTransferOutItem(merchandiseTransferOutItem=MerchandiseTransferOutItem)
+
+class deleteMerchandiseTransferOutItem(graphene.ClientIDMutation):
+    merchandise_transfer_out_item = graphene.Field(merchandiseTransferOutItemNode)
+
+    class Input:
+        id = graphene.ID()
+
+    def mutate_and_get_payload(root, info, **input):
+        MerchandiseTransferOutItem = merchandiseTransferOutItem.objects.get(id=input.get('id'))
+        MerchandiseTransferOutItem.delete()
+        return deleteMerchandiseTransferOutItem(merchandiseTransferInItem=MerchandiseTransferOutItem)
+
+class createMerchandiseTransferOut(graphene.ClientIDMutation):
+    merchandise_transfer_out = graphene.Field(merchandiseTransferOutNode)
+    class Input:
+        store = graphene.ID(required=True)
+        # total_price = graphene.Float(required=True)
+        status = graphene.String()
+        approved_by = graphene.ID()      
+    
+    def mutate_and_get_payload(root, info, **input):
+        store_obj = store.objects.get(id=input.get('store'))
+        received_by = info.context.user
+        MerchandiseTransferOut = merchandise_transfer_out(store=store_obj, received_by=received_by,status=input.get('status'), approved_by=input.get('approved_by'))
+        MerchandiseTransferOut.save()
+        return createMerchandiseTransferIn(merchandise_transfer_out=MerchandiseTransferOut)
+
+class updateMerchandiseTransferOut(graphene.ClientIDMutation):
+    merchandise_transfer_out = graphene.Field(merchandiseTransferOutNode)
+    class Input:
+        id = graphene.ID()
+        store = graphene.ID(required=True)
+        # total_price = graphene.Float(required=True)
+        status = graphene.String()
+        approved_by = graphene.ID()
+    
+    def mutate_and_get_payload(root, info, **input):
+        store_obj = store.objects.get(id=input.get('store'))
+        supplier_obj = supplier.objects.get(id=input.get('supplier'))
+        approved_by = user.objects.get(id=input.get('approved_by'))
+        received_by = info.context.user
+
+        MerchandiseTransferOut = merchandise_transfer_out.objects.get(id=input.get('id'))
+        MerchandiseTransferOut.store = store_obj
+        MerchandiseTransferOut.supplier = supplier_obj
+        MerchandiseTransferOut.received_by = received_by
+        MerchandiseTransferOut.status = input.get('status')
+        MerchandiseTransferOut.approved_by = approved_by
+
+        MerchandiseTransferOut.save()
+
+        return updateMerchandiseTransferIn(merchandise_transfer_out=MerchandiseTransferOut)
+
+class deleteMerchandiseTransferOut(graphene.ClientIDMutation):
+    merchandise_transfer_out = graphene.Field(merchandiseTransferOutNode)
+    class Input:
+        id = graphene.ID()
+
+    def mutate_and_get_payload(root, info, **input):
+        MerchandiseTransferOut = merchandise_transfer_out.objects.get(id=input.get('id'))
+        MerchandiseTransferOut.delete()
+        return deleteMerchandiseTransferOut(merchandise_transfer_out=MerchandiseTransferOut)
 
 
 """CRUD for wastage"""
