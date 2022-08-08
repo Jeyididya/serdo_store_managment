@@ -32,4 +32,4 @@ class user(AbstractUser):
     def __str__(self):
         return self.username
 
-create_group()
+# create_group()
