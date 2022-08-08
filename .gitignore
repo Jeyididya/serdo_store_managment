@@ -6,11 +6,13 @@
 *.log
 *.pot
 *.pyc
-__pycache__/
+*/__pycache__/*
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
 media
+
+**/migrations/*
 
 # If your build process includes running collectstatic, then you probably don't need or want to include staticfiles/
 # in your Git repository. Update and uncomment the following line accordingly.
@@ -226,4 +228,5 @@ $RECYCLE.BIN/
 # End of https://www.toptal.com/developers/gitignore/api/windows,visualstudiocode,django
 
 # Custom rules (everything added below won't be overriden by 'Generate .gitignore File' if you use 'Update' option)
+
 
