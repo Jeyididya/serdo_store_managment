@@ -29,6 +29,8 @@ class user(AbstractUser):
     role = models.CharField(max_length=30, choices=role_options)
     department=models.CharField(max_length=30, choices=department_options)
 
+    objects=user_manager()
+
     def __str__(self):
         return self.username
 
