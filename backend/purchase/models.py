@@ -1,4 +1,5 @@
 import re
+from tabnanny import verbose
 from django.utils.translation import gettext_lazy as _
 from django.db import models
 from inventory.models import item, supplier
@@ -10,14 +11,18 @@ class purchaseOrder(models.Model):
     date = models.DateField(auto_now=True)
     status = models.CharField(max_length=10, choices=(('Pending', 'Pending'), ('Approved', 'Approved'), ('Rejected', 'Rejected')), default='Pending')
     def __str__(self):
-        return str(self.id)
+        return self.created_by.username + ' - ' + str(self.date)
 
 class purchaseOrderItems(models.Model):
     purchaseOrder = models.ForeignKey(purchaseOrder, on_delete=models.CASCADE)
     item = models.ForeignKey(item, on_delete=models.CASCADE, related_name="purchase_order_item")
     quantity = models.IntegerField()
+
+    verbose_name = _('Purchase Order Item')
+    # verbose_name_plural = _('Purchase Order Items')
+
     def __str__(self):
-        return str(self.id) +" " +str(self.purchaseOrder.date)
+        return str(self.purchaseOrder.date)
 
 
 class goodsReceivingNote(models.Model):
@@ -30,7 +35,7 @@ class goodsReceivingNote(models.Model):
         verbose_name_plural = _("goods_receiving_notes")
     
     def __str__(self):
-        return str(self.id) +" " +str(self.date) +" " +str(self.supplier.name)
+        return str(self.id) +" " +str(self.date) +" " +self.supplier.first_name+" "+self.supplier.last_name
 
 
 class goodsReceivingNoteItems(models.Model):
