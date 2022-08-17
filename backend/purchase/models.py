@@ -17,13 +17,17 @@ class purchaseOrderItems(models.Model):
     purchaseOrder = models.ForeignKey(purchaseOrder, on_delete=models.CASCADE)
     item = models.ForeignKey(item, on_delete=models.CASCADE, related_name="purchase_order_item")
     quantity = models.IntegerField()
-
-    verbose_name = _('Purchase Order Item')
-    # verbose_name_plural = _('Purchase Order Items')
-
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    
     def __str__(self):
         return str(self.purchaseOrder.date)
 
+    def get_total(self):
+        return self.quantity * self.price
+    
+    class Meta:
+        verbose_name = _('Purchase Order Item')
+        verbose_name_plural = _('Purchase Order Items')
 
 class goodsReceivingNote(models.Model):
     purchaser=models.ForeignKey(user, on_delete=models.CASCADE, related_name='goods_receiving_note_purchaser')
