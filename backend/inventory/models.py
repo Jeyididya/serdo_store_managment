@@ -107,7 +107,7 @@ class merchandise_transfer_out(models.Model):
         verbose_name = _("merchandise_transfer_out")
     
     def __str__(self):
-        return self.item.__str__ + " " + self.store.name
+        return str(self.date) + " " + self.store.name
 
 
 class merchandiseTransferOutItem(models.Model):
@@ -179,3 +179,4 @@ class wastage(models.Model):
     
 #     def __str__(self):
 #         return self.item.name + " " + self.item.store.name
+ 

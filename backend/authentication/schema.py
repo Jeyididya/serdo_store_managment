@@ -11,10 +11,16 @@ class userType(DjangoObjectType):
         # interfaces = (graphene.relay.Node,)
 
 class userQuery(graphene.ObjectType):
-    user = graphene.List(userType)
+    # user = graphene.List(userType,username=graphene.String())
+    users=graphene.List(userType)
     me = graphene.Field(userType)
-    def resolve_user(self, info):
+    class Arguments:
+        username = graphene.String(required=True)
+
+    def resolve_users(self, info):
         return user.objects.all()
+    # def resolve_user(self, info, username):
+    #     return user.objects.filter(username=username)
 
     def resolve_me(self, info):
         user = info.context.user
@@ -50,3 +56,24 @@ class authMutation(graphene.ObjectType):
 
 
 
+
+# schemaa = graphene.Schema(query=userQuery)
+
+# result=schemaa.execute(
+
+#     """
+#    query{
+#     users{
+#         username
+#         email
+#         isActive
+#       }
+  
+    
+# }
+    
+#     """
+
+# )
+
+# print("-->>",result.data)

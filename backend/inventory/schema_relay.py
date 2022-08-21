@@ -231,7 +231,6 @@ class createItem(graphene.ClientIDMutation):
         store = graphene.ID(required=True)
         supplier = graphene.ID(required=True)
         image = graphene.String()
-        price=graphene.Float(required=True)
     
     
 
@@ -290,16 +289,15 @@ class createMerchandiseTransferInItem(graphene.ClientIDMutation):
     class Input:
         item = graphene.ID(required=True)
         quantity = graphene.Int(required=True)
-        price = graphene.Float(required=True)
         merchandise_transfer_in = graphene.ID(required=True)
     
     def mutate_and_get_payload(root, info, **input):
         item_obj = item.objects.get(id=input.get('item'))
         merchandise_transfer_in_obj = merchandise_transfer_in.objects.get(id=input.get('merchandise_transfer_in'))
 
-        MerchandiseTransferInItem = merchandiseTransferInItem(item=item_obj,quantity=input.get('quantity'),price=input.get('price'),merchandise_transfer_in=merchandise_transfer_in_obj)
+        MerchandiseTransferInItem = merchandiseTransferInItem(item=item_obj,quantity=input.get('quantity'),merchandise_transfer_in=merchandise_transfer_in_obj)
         MerchandiseTransferInItem.save()
-        return createMerchandiseTransferInItem(merchandiseTransferInItem=MerchandiseTransferInItem)
+        return createMerchandiseTransferInItem(merchandise_transfer_in_item=MerchandiseTransferInItem)
 
 class updateMerchandiseTransferInItem(graphene.ClientIDMutation):
     merchandise_transfer_in_item = graphene.Field(merchandiseTransferInItemNode)
@@ -307,7 +305,6 @@ class updateMerchandiseTransferInItem(graphene.ClientIDMutation):
         id = graphene.ID()
         item = graphene.ID(required=True)
         quantity = graphene.Int(required=True)
-        price = graphene.Float(required=True)
         merchandise_transfer_in = graphene.ID(required=True)
     
     def mutate_and_get_payload(root, info, **input):
@@ -317,10 +314,9 @@ class updateMerchandiseTransferInItem(graphene.ClientIDMutation):
         MerchandiseTransferInItem = merchandiseTransferInItem.objects.get(id=input.get('id'))
         MerchandiseTransferInItem.item = item_obj
         MerchandiseTransferInItem.quantity = input.get('quantity')
-        MerchandiseTransferInItem.price = input.get('price')
         MerchandiseTransferInItem.merchandise_transfer_in = merchandise_transfer_in_obj
         MerchandiseTransferInItem.save()
-        return updateMerchandiseTransferInItem(merchandiseTransferInItem=MerchandiseTransferInItem)
+        return updateMerchandiseTransferInItem(merchandise_transfer_in_item =MerchandiseTransferInItem)
 
 class deleteMerchandiseTransferInItem(graphene.ClientIDMutation):
     merchandise_transfer_in_item = graphene.Field(merchandiseTransferInItemNode)
@@ -331,7 +327,7 @@ class deleteMerchandiseTransferInItem(graphene.ClientIDMutation):
     def mutate_and_get_payload(root, info, **input):
         MerchandiseTransferInItem = merchandiseTransferInItem.objects.get(id=input.get('id'))
         MerchandiseTransferInItem.delete()
-        return deleteMerchandiseTransferInItem(merchandiseTransferInItem=MerchandiseTransferInItem)
+        return deleteMerchandiseTransferInItem(merchandise_transfer_in_item=MerchandiseTransferInItem)
 
 class createMerchandiseTransferIn(graphene.ClientIDMutation):
     merchandise_transfer_in = graphene.Field(merchandiseTransferInNode)
@@ -344,7 +340,7 @@ class createMerchandiseTransferIn(graphene.ClientIDMutation):
     def mutate_and_get_payload(root, info, **input):
         store_obj = store.objects.get(id=input.get('store'))
         received_by = info.context.user
-        MerchandiseTransferIn = merchandise_transfer_in(store=store_obj, received_by=received_by,status=input.get('status'), approved_by=input.get('approved_by'))
+        MerchandiseTransferIn = merchandise_transfer_in(store=store_obj, received_by=received_by,status=input.get('status'), approved_by=user.objects.get(id=input.get('approved_by')))
         MerchandiseTransferIn.save()
         return createMerchandiseTransferIn(merchandise_transfer_in=MerchandiseTransferIn)
 
@@ -359,13 +355,13 @@ class updateMerchandiseTransferIn(graphene.ClientIDMutation):
     
     def mutate_and_get_payload(root, info, **input):
         store_obj = store.objects.get(id=input.get('store'))
-        supplier_obj = supplier.objects.get(id=input.get('supplier'))
+        # supplier_obj = supplier.objects.get(id=input.get('supplier'))
         approved_by = user.objects.get(id=input.get('approved_by'))
         received_by = info.context.user
 
         MerchandiseTransferIn = merchandise_transfer_in.objects.get(id=input.get('id'))
         MerchandiseTransferIn.store = store_obj
-        MerchandiseTransferIn.supplier = supplier_obj
+        # MerchandiseTransferIn.supplier = supplier_obj
         MerchandiseTransferIn.received_by = received_by
         MerchandiseTransferIn.status = input.get('status')
         MerchandiseTransferIn.approved_by = approved_by
@@ -396,11 +392,11 @@ class createMerchandiseTransferOutItem(graphene.ClientIDMutation):
     
     def mutate_and_get_payload(root, info, **input):
         item_obj = item.objects.get(id=input.get('item'))
-        merchandise_transfer_out_obj = merchandise_transfer_in.objects.get(id=input.get('merchandise_transfer_out'))
+        merchandise_transfer_out_obj = merchandise_transfer_out.objects.get(id=input.get('merchandise_transfer_out'))
 
-        MerchandiseTransferOutItem = merchandiseTransferInItem(item=item_obj,quantity=input.get('quantity'),merchandise_transfer_out=merchandise_transfer_out_obj)
+        MerchandiseTransferOutItem = merchandiseTransferOutItem(item=item_obj,quantity=input.get('quantity'),merchandise_transfer_out=merchandise_transfer_out_obj)
         MerchandiseTransferOutItem.save()
-        return createMerchandiseTransferOutItem(merchandiseTransferInItem=MerchandiseTransferOutItem)
+        return createMerchandiseTransferOutItem(merchandise_transfer_out_item=MerchandiseTransferOutItem)
 
 class updateMerchandiseTransferOutItem(graphene.ClientIDMutation):
     merchandise_transfer_out_item = graphene.Field(merchandiseTransferOutItemNode)
@@ -413,7 +409,7 @@ class updateMerchandiseTransferOutItem(graphene.ClientIDMutation):
     
     def mutate_and_get_payload(root, info, **input):
         item_obj = item.objects.get(id=input.get('item'))
-        merchandise_transfer_out_obj = merchandise_transfer_in.objects.get(id=input.get('merchandise_transfer_out'))
+        merchandise_transfer_out_obj = merchandise_transfer_out.objects.get(id=input.get('merchandise_transfer_out'))
 
         MerchandiseTransferOutItem = merchandiseTransferOutItem.objects.get(id=input.get('id'))
         MerchandiseTransferOutItem.item = item_obj
@@ -421,7 +417,7 @@ class updateMerchandiseTransferOutItem(graphene.ClientIDMutation):
         # MerchandiseTransferOutItem.price = input.get('price')
         MerchandiseTransferOutItem.merchandise_transfer_in = merchandise_transfer_out_obj
         MerchandiseTransferOutItem.save()
-        return updateMerchandiseTransferOutItem(merchandiseTransferOutItem=MerchandiseTransferOutItem)
+        return updateMerchandiseTransferOutItem(merchandise_transfer_out_item=MerchandiseTransferOutItem)
 
 class deleteMerchandiseTransferOutItem(graphene.ClientIDMutation):
     merchandise_transfer_out_item = graphene.Field(merchandiseTransferOutItemNode)
@@ -432,7 +428,7 @@ class deleteMerchandiseTransferOutItem(graphene.ClientIDMutation):
     def mutate_and_get_payload(root, info, **input):
         MerchandiseTransferOutItem = merchandiseTransferOutItem.objects.get(id=input.get('id'))
         MerchandiseTransferOutItem.delete()
-        return deleteMerchandiseTransferOutItem(merchandiseTransferInItem=MerchandiseTransferOutItem)
+        return deleteMerchandiseTransferOutItem(merchandise_transfer_out_item=MerchandiseTransferOutItem)
 
 class createMerchandiseTransferOut(graphene.ClientIDMutation):
     merchandise_transfer_out = graphene.Field(merchandiseTransferOutNode)
@@ -444,10 +440,10 @@ class createMerchandiseTransferOut(graphene.ClientIDMutation):
     
     def mutate_and_get_payload(root, info, **input):
         store_obj = store.objects.get(id=input.get('store'))
-        received_by = info.context.user
-        MerchandiseTransferOut = merchandise_transfer_out(store=store_obj, received_by=received_by,status=input.get('status'), approved_by=input.get('approved_by'))
+        requested_by = info.context.user
+        MerchandiseTransferOut = merchandise_transfer_out(store=store_obj, requested_by=requested_by,status=input.get('status'), approved_by=user.objects.get(id=input.get('approved_by')))
         MerchandiseTransferOut.save()
-        return createMerchandiseTransferIn(merchandise_transfer_out=MerchandiseTransferOut)
+        return createMerchandiseTransferOut(merchandise_transfer_out=MerchandiseTransferOut)
 
 class updateMerchandiseTransferOut(graphene.ClientIDMutation):
     merchandise_transfer_out = graphene.Field(merchandiseTransferOutNode)
@@ -460,20 +456,20 @@ class updateMerchandiseTransferOut(graphene.ClientIDMutation):
     
     def mutate_and_get_payload(root, info, **input):
         store_obj = store.objects.get(id=input.get('store'))
-        supplier_obj = supplier.objects.get(id=input.get('supplier'))
+        # supplier_obj = supplier.objects.get(id=input.get('supplier'))
         approved_by = user.objects.get(id=input.get('approved_by'))
         received_by = info.context.user
 
         MerchandiseTransferOut = merchandise_transfer_out.objects.get(id=input.get('id'))
         MerchandiseTransferOut.store = store_obj
-        MerchandiseTransferOut.supplier = supplier_obj
+        # MerchandiseTransferOut.supplier = supplier_obj
         MerchandiseTransferOut.received_by = received_by
         MerchandiseTransferOut.status = input.get('status')
         MerchandiseTransferOut.approved_by = approved_by
 
         MerchandiseTransferOut.save()
 
-        return updateMerchandiseTransferIn(merchandise_transfer_out=MerchandiseTransferOut)
+        return updateMerchandiseTransferOut(merchandise_transfer_out=MerchandiseTransferOut)
 
 class deleteMerchandiseTransferOut(graphene.ClientIDMutation):
     merchandise_transfer_out = graphene.Field(merchandiseTransferOutNode)
@@ -561,11 +557,33 @@ class inventoryMutations(graphene.ObjectType):
     update_supplier = updateSupplier.Field()
     delete_supplier = deleteSupplier.Field()
 
+    create_item_category=createItemCategory.Field()
+    update_item_category=updateItemCategory.Field()
+    delete_item_category=deleteItemCategory.Field()
+
     create_item= createItem.Field()
     update_item = updateItem.Field()
     delete_item = deleteItem.Field()
 
 
+    createMerchandiseTransferInItem=createMerchandiseTransferInItem.Field()
+    updateMerchandiseTransferInItem=updateMerchandiseTransferInItem.Field()
+    deleteMerchandiseTransferInItem=deleteMerchandiseTransferInItem.Field()
+
+
+    createMerchandiseTransferOutItem=createMerchandiseTransferOutItem.Field()
+    updateMerchandiseTransferOutItem=updateMerchandiseTransferOutItem.Field()
+    deleteMerchandiseTransferOutItem=deleteMerchandiseTransferOutItem.Field()
+
+
     create_wastage = createWastage.Field()
+    update_wastage = updateWastage.Field()
+    delete_wastage = deleteWastage.Field()
 
     createMerchandiseTransferIn = createMerchandiseTransferIn.Field()
+    updateMerchandiseTransferIn=updateMerchandiseTransferIn.Field()
+    deleteMerchandiseTransferIn=deleteMerchandiseTransferIn.Field()
+
+    createMerchandiseTransferOut = createMerchandiseTransferOut.Field()
+    updateMerchandiseTransferOut=updateMerchandiseTransferOut.Field()
+    deleteMerchandiseTransferOut=deleteMerchandiseTransferOut.Field()
