@@ -1,1 +1,1 @@
-## Serdo hotel managment
+## Serdo Inventory managment
